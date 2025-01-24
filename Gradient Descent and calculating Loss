@@ -1,0 +1,80 @@
+Gradient Descent 
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, confusion_matrix
+
+# Sample dataset
+data = {
+    'Feature1': [100, 200, 300, 400, 500],
+    'Feature2': [1.2, 2.4, 3.1, 4.8, 5.5],
+    'Target': [0, 1, 0, 1, 0]
+}
+df = pd.DataFrame(data)
+
+# Splitting features and target
+X = df[['Feature1', 'Feature2']]
+y = df['Target']
+
+# Normalization (Min-Max Scaling)
+scaler = MinMaxScaler()
+X_normalized = scaler.fit_transform(X)
+
+# Splitting data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X_normalized, y, test_size=0.2, random_state=42)
+
+# Logistic Regression model
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+# Predictions
+y_pred = model.predict(X_test)
+
+# Evaluation
+accuracy = accuracy_score(y_test, y_pred)
+conf_matrix = confusion_matrix(y_test, y_pred)
+
+print("Accuracy:", accuracy)
+print("Confusion Matrix:\n", conf_matrix)
+
+# Loss curve and Gradient Descent for Median House Prices
+# Generating synthetic data for median house prices
+np.random.seed(42)
+X_house = np.random.rand(100, 1) * 10  # Features (e.g., house size in 1000s sq. ft.)
+y_house = 2.5 * X_house + np.random.randn(100, 1) * 2 + 5  # Target (median prices in $100k)
+
+# Normalizing data
+scaler_house = MinMaxScaler()
+X_house_scaled = scaler_house.fit_transform(X_house)
+
+# Gradient Descent Function
+def gradient_descent(X, y, lr=0.01, epochs=1000):
+    m, n = X.shape
+    X_b = np.c_[np.ones((m, 1)), X]  # Add bias term
+    theta = np.random.randn(n + 1, 1)  # Random initialization
+    losses = []
+
+    for epoch in range(epochs):
+        gradients = 2/m * X_b.T.dot(X_b.dot(theta) - y)
+        theta -= lr * gradients
+        loss = np.mean((X_b.dot(theta) - y) ** 2)
+        losses.append(loss)
+
+    return theta, losses
+
+# Apply Gradient Descent
+theta, losses = gradient_descent(X_house_scaled, y_house, lr=0.1, epochs=500)
+
+# Plot Loss Curve
+plt.figure(figsize=(8, 6))
+plt.plot(range(1, len(losses) + 1), losses, label='Loss')
+plt.title('Loss Curve')
+plt.xlabel('Epochs')
+plt.ylabel('Mean Squared Error')
+plt.legend()
+plt.grid()
+plt.show()
